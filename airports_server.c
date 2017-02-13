@@ -10,11 +10,10 @@
 airport_ret *
 airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 {
-	static airport_ret  result;
-
-	/*
-	 * insert server code here
-	 */
-
-	return &result;
+  static airport_ret  result;
+  printf("in airports server\n");
+  /*
+   * insert server code here
+   */
+  return &result;
 }

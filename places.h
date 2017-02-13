@@ -43,7 +43,7 @@ struct places_ret {
 };
 typedef struct places_ret places_ret;
 
-#define PLACESPROG 0x38886665
+#define PLACESPROG 0x202A6358
 #define PLACES_VERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)

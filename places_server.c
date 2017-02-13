@@ -10,37 +10,45 @@
 void
 airportprog_1(char *host)
 {
-        CLIENT *clnt;
-        airport_ret  *result_1;
-        airportdata  airports_1_arg;
+  CLIENT *clnt;
+  airport_ret  *result_1;
+  airportdata  airports_1_arg;
 
+  airports_1_arg.latitude = 47.626353;
+  airports_1_arg.longitude = -122.333144;
+  
+  printf("in places server\n");
+		
 #ifndef DEBUG
-        clnt = clnt_create (host, AIRPORTPROG, AIRPORT_VERS, "udp");
-        if (clnt == NULL) {
-                clnt_pcreateerror (host);
-                exit (1);
-        }
+  clnt = clnt_create (host, AIRPORTPROG, AIRPORT_VERS, "udp");
+  if (clnt == NULL) {
+	printf("no client");
+	clnt_pcreateerror (host);
+	exit (1);
+  }
 #endif  /* DEBUG */
-
-        result_1 = airports_1(&airports_1_arg, clnt);
-        if (result_1 == (airport_ret *) NULL) {
-                clnt_perror (clnt, "call failed");
-        }
+  
+  result_1 = airports_1(&airports_1_arg, clnt);
+  if (result_1 == (airport_ret *) NULL) {
+	clnt_perror (clnt, "call failed");
+  } else {
+	printf("call successful\n");
+  }
 #ifndef DEBUG
-        clnt_destroy (clnt);
+  clnt_destroy (clnt);
 #endif   /* DEBUG */
 }
 
 places_ret *
 places_1_svc(placedata *argp, struct svc_req *rqstp)
 {
-	static places_ret  result;
-	char *host = "localhost";
-
-	/*
-	 * insert server code here
-	 */
-
-	return &result;
-	airportprog_1(host);
+  static places_ret  result;
+  char *host = "localhost";
+  /*
+   * insert server code here
+   */
+  airportprog_1(host);
+  
+  printf("really in places server\n");
+  return &result;
 }

@@ -13,7 +13,11 @@ placesprog_1(char *host)
 	CLIENT *clnt;
 	places_ret  *result_1;
 	placedata  places_1_arg;
-
+	places_1_arg.name = "seattle";
+	places_1_arg.state = "wa";
+	
+	printf("in places client\n");
+	
 #ifndef	DEBUG
 	clnt = clnt_create (host, PLACESPROG, PLACES_VERS, "udp");
 	if (clnt == NULL) {
@@ -41,7 +45,9 @@ main (int argc, char *argv[])
 		printf ("usage: %s server_host\n", argv[0]);
 		exit (1);
 	}
+	printf("starting\n");
 	host = argv[1];
+	printf("running server\n");
 	placesprog_1(host);
 	exit(0);
 }
