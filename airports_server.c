@@ -6,6 +6,8 @@
 
 #include "places.h"
 #include "airports.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 airport_ret *
 airports_1_svc(airportdata *argp, struct svc_req *rqstp)
@@ -15,5 +17,19 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
   /*
    * insert server code here
    */
+  FILE *fp;
+  fp = fopen("airport-locations.txt", "r");
+  if (fp == NULL)
+	printf("error opening file\n");
+
+  char line[100];
+  if (fgets(line, 100, fp) != NULL) {
+	printf(line);
+	printf("\n");
+  }
+  else
+	printf("error reading file\n");
+  
+  fclose(fp);
   return &result;
 }
