@@ -14,21 +14,40 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 {
   static airport_ret  result;
   printf("in airports server\n");
-  /*
-   * insert server code here
-   */
+
   FILE *fp;
   fp = fopen("airport-locations.txt", "r");
   if (fp == NULL)
 	printf("error opening file\n");
 
-  char line[100];
-  if (fgets(line, 100, fp) != NULL) {
-	printf(line);
-	printf("\n");
+  char line[200];
+
+  while(fgets(line, 200, fp) != NULL) {
+	char *comma = strchr(line, ',');
+	char *tab = strchr(line, '\t');
+	char air[4];
+	char latitude[5];
+	char longitude[7];
+	char city[40];
+
+	if(comma) {
+	  strncpy(air, line + 1, 3);
+	  air[4] = '\0';
+
+	  strncpy(latitude, line + 6, 5);
+	  latitude[5] = '\0';
+
+	  strncpy(longitude, line + 12, 6);
+	  longitude[7] = '\0';
+
+	  int comma_pos = comma - tab - 1;
+	  int tab_pos = tab - line + 1;
+
+	  strncpy(city, line + tab_pos, comma_pos);
+	  city[comma_pos] = '\0';
+
+	}
   }
-  else
-	printf("error reading file\n");
   
   fclose(fp);
   return &result;
