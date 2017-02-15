@@ -13,6 +13,8 @@ placesprog_1(char *host)
 	CLIENT *clnt;
 	places_ret  *result_1;
 	placedata  places_1_arg;
+	places_1_arg.name = "Seattle";
+	places_1_arg.state = "WA";
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, PLACESPROG, PLACES_VERS, "udp");
@@ -21,11 +23,15 @@ placesprog_1(char *host)
 		exit (1);
 	}
 #endif	/* DEBUG */
-
+	printf("Making a call to the places server");
+	printf("\n");
 	result_1 = places_1(&places_1_arg, clnt);
+	printf("Remote call made");
+	
 	if (result_1 == (places_ret *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
@@ -42,6 +48,8 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 	host = argv[1];
+	printf("Testing the places client");
+	printf(" ");
 	placesprog_1(host);
 	exit(0);
 }

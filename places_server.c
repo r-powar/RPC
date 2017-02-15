@@ -6,6 +6,67 @@
 
 #include "places.h"
 #include "airports.h"
+#include <stdio.h>
+
+void trimespace(char *str){
+	int i;
+	int begin = 0;
+	int end = strlen(str) - 1;
+	while(isspace((unsigned char) str[begin])){
+		begin++;
+	}
+	
+	while((end >= begin) && isspace((unsigned char) str[end])){
+		end--;
+	}
+	
+	for(i = begin; i<= end; i++){
+		str[i - begin] = str[i];
+	} 
+	
+	str[i - begin] = '\0';
+}
+
+void readFile(){
+	FILE *fp;
+	fp = fopen("/home/st/powarr/hw2_Distir_Sys/places2k.txt", "r");
+	
+	printf("Reading File Function \n");
+	if(fp == NULL){	
+		printf("Failed opening the file \n");
+		fprintf(stderr, "Can't open the file");
+		exit(1);
+	}
+	char fileLine[200];
+       	char state[3];
+        char city[70];
+        char latitude[10];
+        char longitude[10];
+	while(fgets(fileLine, 200,fp )!= NULL){
+		strncpy(state,fileLine, 2);
+		state[2] = '\0';
+		
+		strncpy(city, fileLine + 9, 63);
+		trimespace(city);
+		
+		strncpy(latitude, fileLine + 143, 9);
+		latitude[9] = '\0';
+
+		strncpy(longitude, fileLine + 153, 10);
+		longitude[10] = '\0';
+		
+		 printf(state);
+       		 printf(" ");
+       		 printf(city);
+       		 printf(" ");
+        	 printf(latitude);
+       		 printf(" ");
+       		 printf(longitude);
+       		 printf(" ");			
+	}
+	fclose(fp);
+	
+}
 
 void
 airportprog_1(char *host)
@@ -13,15 +74,17 @@ airportprog_1(char *host)
         CLIENT *clnt;
         airport_ret  *result_1;
         airportdata  airports_1_arg;
-
+	airports_1_arg.latitude = 31.566367;
+	airports_1_arg.longitude = -85.251300;
 #ifndef DEBUG
         clnt = clnt_create (host, AIRPORTPROG, AIRPORT_VERS, "udp");
-        if (clnt == NULL) {
+	if (clnt == NULL) {
+		printf("Server Call Failed \n");
                 clnt_pcreateerror (host);
                 exit (1);
         }
 #endif  /* DEBUG */
-
+	printf("Making a remote call to airports \n");
         result_1 = airports_1(&airports_1_arg, clnt);
         if (result_1 == (airport_ret *) NULL) {
                 clnt_perror (clnt, "call failed");
@@ -40,7 +103,8 @@ places_1_svc(placedata *argp, struct svc_req *rqstp)
 	/*
 	 * insert server code here
 	 */
-
-	return &result;
+	printf("Testing all from the print server \n");
 	airportprog_1(host);
+	readFile();
+	return &result;
 }

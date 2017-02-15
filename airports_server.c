@@ -15,6 +15,6 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 	/*
 	 * insert server code here
 	 */
-
+	printf("Testing from airport server \n");
 	return &result;
 }

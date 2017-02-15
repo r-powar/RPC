@@ -42,7 +42,7 @@ struct airport_ret {
 };
 typedef struct airport_ret airport_ret;
 
-#define AIRPORTPROG 0x38886665
+#define AIRPORTPROG 0x202A6362
 #define AIRPORT_VERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)
