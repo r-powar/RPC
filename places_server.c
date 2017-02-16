@@ -14,8 +14,8 @@ airportprog_1(char *host)
   airport_ret  *result_1;
   airportdata  airports_1_arg;
 
-  airports_1_arg.latitude = 47.626353;
-  airports_1_arg.longitude = -122.333144;
+  airports_1_arg.latitude = 47.61;
+  airports_1_arg.longitude = -117.3013;
   
   printf("in places server\n");
 		
@@ -33,6 +33,12 @@ airportprog_1(char *host)
 	clnt_perror (clnt, "call failed");
   } else {
 	printf("call successful\n");
+	airportlist list;
+	list = result_1 -> airport_ret_u.list;
+	while (list != NULL) {
+	  printf ("%s %s %f %f dist: %f \n", list -> code, list ->name, list -> latitude, list -> longitude, list->distance);
+	  list = list -> next;
+	}
   }
 #ifndef DEBUG
   clnt_destroy (clnt);
