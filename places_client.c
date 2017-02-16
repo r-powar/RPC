@@ -8,15 +8,13 @@
 #include "airports.h"
 
 void
-placesprog_1(char *host)
+placesprog_1(char *host, char *city, char *state)
 {
 	CLIENT *clnt;
 	places_ret  *result_1;
 	placedata  places_1_arg;
-	places_1_arg.name = "seattle";
-	places_1_arg.state = "wa";
-	
-	printf("in places client\n");
+	places_1_arg.name = city;
+	places_1_arg.state = state;
 	
 #ifndef	DEBUG
 	clnt = clnt_create (host, PLACESPROG, PLACES_VERS, "udp");
@@ -39,15 +37,18 @@ placesprog_1(char *host)
 int
 main (int argc, char *argv[])
 {
-	char *host;
+  char *host;
+  char *city;
+  char *state;
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
-	}
-	printf("starting\n");
-	host = argv[1];
-	printf("running server\n");
-	placesprog_1(host);
-	exit(0);
+  if (argc < 4){
+	printf ("usage: %s server_host city state\n", argv[0]);
+	exit (1);
+  }
+
+  host = argv[1];
+  city = argv[2];
+  state = argv[3];
+  placesprog_1(host, city, state);
+  exit(0);
 }

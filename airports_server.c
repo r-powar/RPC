@@ -47,8 +47,8 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 {
   const int NUM_RESULTS = 5;
   airportdata* p = argp;
-  double latitude_in = (double)p->latitude;
-  double longitude_in = (double)p->longitude;
+  double latitude_in = (double) p -> latitude;
+  double longitude_in = (double) p -> longitude;
   
   struct nodedata {
 	char city[40];

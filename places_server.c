@@ -48,6 +48,10 @@ airportprog_1(char *host)
 places_ret *
 places_1_svc(placedata *argp, struct svc_req *rqstp)
 {
+  placedata *p = argp;
+  char *city = p -> name;
+  char *state = p -> state;
+  printf("places server received: %s %s\n", city, state);
   static places_ret  result;
   char *host = "localhost";
   /*
