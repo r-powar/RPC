@@ -27,6 +27,8 @@ placesprog_1(char *host, char *city, char *state)
 	result_1 = places_1(&places_1_arg, clnt);
 	if (result_1 == (places_ret *) NULL) {
 		clnt_perror (clnt, "call failed");
+	} else {
+	  printf("call successful");
 	}
 #ifndef	DEBUG
 	clnt_destroy (clnt);

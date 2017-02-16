@@ -14,6 +14,7 @@
 #define pi 3.14159265358979323846
 
 
+/* Distance functions */
 double deg2rad(double deg) {
   return (deg * pi / 180);
 }
@@ -42,6 +43,7 @@ double distance(double lat1, double lon1, double lat2, double lon2, char unit) {
   return (dist);
 }
 
+/* Airports server functionalist*/
 airport_ret *
 airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 {
@@ -60,15 +62,17 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
   static airport_ret result;
   FILE *fp;
   char line[200];
-  void* tree = kd_create(2);
+  void* tree = kd_create(2); /* Create kd tree with 2 dimensions */
   void* res;
   int i = 0;
   double la;
   double lo;
   nodedata *node;
 
+  /* Free existing memory */
   xdr_free ((xdrproc_t) xdr_airport_ret, (char *) &res);
-  
+
+  /* Open and read airport locations file */
   fp = fopen("airport-locations.txt", "r");
   if (fp == NULL) {
 	result.err = errno;
@@ -98,16 +102,19 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 	  strncpy(data[i].city, line + tab_pos, comma_pos);
 	  data[i].city[comma_pos] = '\0';
 
+	  /* Insert into kd tree */
 	  kd_insert2(tree, la, lo, &data[i]);
 	  i += 1;
 	}
   }
   fclose(fp);
 
+  /* Get pointer to return data structure */
   airportlist newitem;
   airportlist *ptr;
   ptr = &result.airport_ret_u.list;
 
+  /* Find nearest airports */
   res = kd_nearest_n2(tree, latitude_in, longitude_in, NUM_RESULTS);
   while(!kd_res_end(res)) {
 	*ptr = (airportnode *) malloc (sizeof(airportnode));
@@ -115,8 +122,8 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 
 	if (newitem != (airportnode *)NULL) {
 	  kd_res_item2(res, &la, &lo);
+	  /* Append airport value to return list */
 	  node = (nodedata*)kd_res_item_data(res);
-	  
 	  newitem -> code = node -> code;
 	  newitem -> name = node -> city;
 	  newitem -> latitude = la;
@@ -128,6 +135,7 @@ airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 	kd_res_next(res);
   }
 
+  /* Free kd tree memory */
   kd_res_free(res);
   kd_free(tree);
   *ptr = (airportlist)NULL;
