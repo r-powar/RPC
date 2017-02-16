@@ -223,65 +223,11 @@ void readFile(struct trieNode *node){
 }
 
 
-void
-airportprog_1(char *host, struct trieNode *node, char *word, places_ret *result)
-{
-  //  static places_ret  result;
-  struct cordinates checkWord;
-  CLIENT *clnt;
-  airport_ret  *result_1;
-  airportdata  airports_1_arg;
-
-  checkWord = getTrie(node, word);
-  airports_1_arg.latitude = atof(checkWord.latitude);
-  airports_1_arg.longitude = atof(checkWord.longitude);
-#ifndef DEBUG
-  clnt = clnt_create (host, AIRPORTPROG, AIRPORT_VERS, "udp");
-  if (clnt == NULL) {
-	printf("Server Call Failed \n");
-	clnt_pcreateerror (host);
-	exit (1);
-  }
-#endif  /* DEBUG */
-  printf("Making a remote call to airports \n");
-  result_1 = airports_1(&airports_1_arg, clnt);
-  if (result_1 == (airport_ret *) NULL) {
-	clnt_perror (clnt, "call failed");
-  } else {
-	airportlist list;
-	list = result_1 -> airport_ret_u.list;
-	placelist newitem;
-	placelist *ptr;
-	ptr = *result.places_ret_u.list;
-	printf("here\n");
-	while (list != NULL) {
-	  *ptr = (placenode *) malloc (sizeof(placenode));
-	  newitem= *ptr;
-	  if (newitem != (placenode *)NULL) {
-		newitem -> placename = list -> name;
-		//newitem -> code = list -> code;
-		printf ("%s %s %f %f dist: %f \n", list -> code, list ->name, list -> latitude, list -> longitude, list->distance);
-		ptr = &newitem -> next;
-	  }
-	  list = list -> next;
-	}
-	*ptr = (placelist)NULL;
-	printf("here2\n");
-  }
-  
-#ifndef DEBUG
-  clnt_destroy (clnt);
-#endif   /* DEBUG */
-  
-  *result.err = 0;
-  //return result;
-}
-
 places_ret *
 places_1_svc(placedata *argp, struct svc_req *rqstp)
 {
   static places_ret  result;
-  places_ret *result;
+  //places_ret result;
   placedata *p = argp;
   char *city = p->name;
   char * state = p->state;
@@ -293,15 +239,63 @@ places_1_svc(placedata *argp, struct svc_req *rqstp)
   convertToLower(city);
   convertToLower(state);
   searchKey = combine(state, city);
-  /*
-   * insert server code here
-   */
 
   struct trieNode *node = initializeTrie();
   readFile(node);
-  airportprog_1(host, node, searchKey, &result);
+
+  struct cordinates checkWord;
+  CLIENT *clnt;
+  airport_ret  *result_1;
+  airportdata  airports_1_arg;
+
+  checkWord = getTrie(node, searchKey);
+  airports_1_arg.latitude = atof(checkWord.latitude);
+  airports_1_arg.longitude = atof(checkWord.longitude);
+
+#ifndef DEBUG
+  clnt = clnt_create (host, AIRPORTPROG, AIRPORT_VERS, "udp");
+  if (clnt == NULL) {
+	printf("Server Call Failed \n");
+	clnt_pcreateerror (host);
+	exit (1);
+  }
+#endif  /* DEBUG */
+  placelist *ptr;
+  
+  printf("Making a remote call to airports \n");
+  result_1 = airports_1(&airports_1_arg, clnt);
+  if (result_1 == (airport_ret *) NULL) {
+	clnt_perror (clnt, "call failed in places server");
+  } else {
+	airportlist list;
+	list = result_1 -> airport_ret_u.list;
+	placelist newitem;
+
+	ptr = &result.places_ret_u.list;
+
+	while (list != NULL) {
+	  *ptr = (placenode *) malloc (sizeof(placenode));
+	  newitem= *ptr;
+	  if (newitem != (placenode *)NULL) {
+		newitem -> placename = list -> name;
+		printf ("%s %s %f %f dist: %f \n", list -> code, list ->name, list -> latitude, list -> longitude, list->distance);
+		newitem -> state = "wa";
+		newitem -> latitude = (float)10.43;
+		newitem ->longitude = (float)12.43;
+		ptr = &newitem -> next;
+	  }
+	  list = list -> next;
+	}
+  }
+
+#ifndef DEBUG
+  clnt_destroy (clnt);
+#endif   /* DEBUG */
+  *ptr = (placelist)NULL;
+  
+  result.err = 0;
   
   trieFree(node);
-
+  printf("RETURNING \n");
   return &result;
 }

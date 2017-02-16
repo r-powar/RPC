@@ -26,10 +26,19 @@ placesprog_1(char *host, char *city, char *state)
 
 	result_1 = places_1(&places_1_arg, clnt);
 	if (result_1 == (places_ret *) NULL) {
-		clnt_perror (clnt, "call failed");
+		clnt_perror (clnt, "call failed here\n");
 	} else {
-	  printf("call successful");
+	  printf("call successful\n");
+	
+	  placelist list;
+	  list = result_1 -> places_ret_u.list;
+	  printf("We found these airports near you: ");
+	  while(list != NULL) {
+	    printf("%s\n", list->placename);
+		list = list -> next;
+	  }
 	}
+
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
