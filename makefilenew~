@@ -1,0 +1,3 @@
+CC = gcc
+CFLAGS = -g -DRPC_SVC_FG
+x

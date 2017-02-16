@@ -1,0 +1,32 @@
+CC = gcc
+CFLAGS = -g -DRPC_SVC_FG
+RPCGEN_FLAG = -C
+
+all: airports_client airports_server places_client places_server
+
+airports_client: airports_client.o airports_clnt.o airports_xdr.o
+		 $(CC) -o airports_client airports_client.o airports_clnt.o airports_xdr.o -lnsl
+
+airports_server: airports_server.o airports_svc.o airports_xdr.o
+		 $(CC) -o airports_server airports_server.o airports_svc.o airports_xdr.o -lsnl
+
+airports_server.o: airports_server.c airports.h
+		   $(CC) $(CFLAGS) -c airports_server.c
+
+airports_client.o: airports_client.c airports.h
+		   $(CC) $(CFLAGS) -c airports_client.c
+
+airports_svc.o: airports_svc.c airports.h
+		$ (CC) $(CFLAGS) -c airports_scv.c
+
+airports_clnt.o: airports_clnt.c airports.h
+		 $ (CC) $(CFLAGS) -c airports_clnt.c
+
+airports_xdr.o: airports_xdr.c airports.h
+		$ (CC) $(CFLAGS) -c airports_xdr.c
+
+airports_clnt.c airports_svc.c airports_xdr.c airports.h:	airports.x
+		rpcgen $(RPCGEN_FLAG) airports.x
+
+clean:
+	rm -f airports_client airports_client.o airprts_server airports_server.o airports_clnt.* airports_svc.* airports.h
