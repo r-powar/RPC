@@ -7,6 +7,91 @@
 #include "places.h"
 #include "airports.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#define false 0
+#define true 1
+struct trie tree;
+
+struct trieNode{
+	char *longi;
+	char *lat;
+	struct trieNode *children[27];
+	char value;
+};
+
+struct trie{
+	struct trieNode root;
+};
+
+int convertLetterToIndex(char alphabet){
+	if(alphabet >= 'a' && alphabet <= 'z'){
+		return alphabet - 'a';
+	} else{
+		return -1; 	
+	}
+}
+
+struct trieNode *initializeTrie(){
+	struct trieNode *pNode = NULL;
+	
+	pNode = (struct trieNode *)malloc(sizeof(struct trieNode));
+	if(pNode){
+		pNode->longi = NULL;
+		pNode->lat = NULL;
+		pNode->value = '\0';
+		memset(pNode->children, 0, sizeof(pNode->children));
+	} 
+
+	return pNode;
+}
+
+void trieFree(struct trieNode *root){
+	int i;
+	if(root){
+		for(i = 0; i<= 26; i++){
+			trieFree(root->children[i]);
+		}
+	}
+	free(root);
+}
+
+int trieInsert(struct trieNode *node, char *key, char *longitude, char *latitude){
+	struct trieNode *parent = node;
+
+	if(key){
+		int index = 0; 
+		int i = 0;
+		
+		if(node){
+			while(key[i] != '\0'){
+				int indexVal = convertLetterToIndex(key[i]);
+				if(!parent->children[indexVal]){
+					parent->children[indexVal] = initializeTrie();
+            				parent->children[indexVal]->value = key[i];
+				}
+				parent = parent->children[indexVal];
+				i++;
+			}
+	
+			int longitudeLen = strlen(longitude);
+			int latitudeLen = strlen(latitude);
+	
+			parent->longi = malloc(longitudeLen + 1);
+			strncpy(parent->longi, longitude, longitudeLen + 1);
+			parent->longi[longitudeLen] = '\0';
+		
+			parent->lat = malloc(latitudeLen + 1);
+			strncpy(parent->lat, latitude, latitudeLen + 1);
+			parent->lat[latitudeLen] = '\0';
+	
+			//free(node->longi);
+			//free(node->lat);
+		}
+	}
+
+	
+}
 
 void trimespace(char *str){
 	int i;
@@ -27,11 +112,76 @@ void trimespace(char *str){
 	str[i - begin] = '\0';
 }
 
+void convertToLower(char *str){
+	int i; 	
+	for(i = 0; i < strlen(str); i++){
+		str[i] = tolower(str[i]);
+	}
+}
+
+void removeSpecialChars(char *str){
+	int i;
+	int j;
+	for(i = 0; str[i] != '\0'; ++i){
+        while (!( (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '\0') )
+        {
+            for(j = i; str[j] != '\0'; ++j)
+            {
+                str[j] = str[j+1];
+            }
+            str[j] = '\0';
+        }
+    }
+
+
+}
+
+char *combine(char *str1, char *str2){
+	char *final = malloc(strlen(str1)+ strlen(str2)+ 1);
+	strcpy(final, str1);
+	strcat(final, str2);
+	return final;
+}
+
+
+bool getTrie(struct trieNode *root, char *key){
+	struct trieNode *pNode = root;
+	bool flag = true;
+	if(!key){
+	    printf("Word is empty \n");
+	    return false;
+	}
+	
+	if(!root){
+		printf("Trie is empty \n");
+		return false;
+	}
+	int i = 0;
+	while(key[i] != '\0'){
+		int indexVal = convertLetterToIndex(key[i]);
+		if(!pNode->children[indexVal]){
+			printf("Character not found in trie \n");
+			return false;
+			
+		}
+
+		pNode = pNode->children[indexVal];
+		i++;
+	}
+	
+	printf("Longitude: %s", pNode->longi);
+	printf(" ");
+	printf("Latitude: %s \n", pNode->lat);
+	
+	return flag;
+	
+}
+
 void readFile(){
 	FILE *fp;
 	fp = fopen("/home/st/powarr/hw2_Distir_Sys/places2k.txt", "r");
 	
-	printf("Reading File Function \n");
+	//printf("Reading File Function \n");
 	if(fp == NULL){	
 		printf("Failed opening the file \n");
 		fprintf(stderr, "Can't open the file");
@@ -42,29 +192,42 @@ void readFile(){
         char city[70];
         char latitude[10];
         char longitude[10];
+	int counting = 0;
+	char *place;
+	struct trieNode *node = initializeTrie();
 	while(fgets(fileLine, 200,fp )!= NULL){
 		strncpy(state,fileLine, 2);
 		state[2] = '\0';
+		convertToLower(state);
 		
 		strncpy(city, fileLine + 9, 63);
 		trimespace(city);
-		
+		convertToLower(city);
+		removeSpecialChars(city);	
+	
+		place = combine(state, city);
+			
 		strncpy(latitude, fileLine + 143, 9);
 		latitude[9] = '\0';
 
 		strncpy(longitude, fileLine + 153, 10);
 		longitude[10] = '\0';
 		
-		 printf(state);
-       		 printf(" ");
-       		 printf(city);
-       		 printf(" ");
-        	 printf(latitude);
-       		 printf(" ");
-       		 printf(longitude);
-       		 printf(" ");			
+		//struct trieNode *node = initializeTrie();
+		trieInsert(node, place, longitude, latitude);
+		counting++;
+		
+				
 	}
+	bool search = getTrie(node, place);
+	printf("Word found: %d\n", search);
+	trieFree(node);
+
 	fclose(fp);
+	
+}
+
+void getLat_Lon(char *word){
 	
 }
 
@@ -104,6 +267,7 @@ places_1_svc(placedata *argp, struct svc_req *rqstp)
 	 * insert server code here
 	 */
 	printf("Testing all from the print server \n");
+
 	airportprog_1(host);
 	readFile();
 	return &result;
