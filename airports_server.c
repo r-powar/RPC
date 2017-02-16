@@ -6,49 +6,108 @@
 
 #include "places.h"
 #include "airports.h"
+#include "kdtree/kdtree.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+
 
 airport_ret *
 airports_1_svc(airportdata *argp, struct svc_req *rqstp)
 {
-  static airport_ret  result;
-  printf("in airports server\n");
-
+  struct nodedata {
+	char city[40];
+	char code[4];
+  };
+  typedef struct nodedata nodedata;
+  struct nodedata data[1200];
+	
+  static airport_ret result;
   FILE *fp;
-  fp = fopen("airport-locations.txt", "r");
-  if (fp == NULL)
-	printf("error opening file\n");
-
   char line[200];
+  void* tree = kd_create(2);
+  void* res;
+  int i = 0;
+  double la;
+  double lo;
+  nodedata *node;
 
+  printf("in airports server...");
+  
+  //xdr_free ((xdrproc_t) xdr_airport_ret, (char *) &res);
+  
+  fp = fopen("airport-locations.txt", "r");
+  if (fp == NULL) {
+	printf("error");
+	result.err = errno;
+	return &result;
+  }
+
+  printf("processing file...");
+  
   while(fgets(line, 200, fp) != NULL) {
 	char *comma = strchr(line, ',');
 	char *tab = strchr(line, '\t');
-	char air[4];
-	char latitude[5];
-	char longitude[7];
-	char city[40];
-
+	char latitude[6];
+	char longitude[8];
+	int comma_pos = comma - tab - 1;
+	int tab_pos = tab - line + 1;
+	
 	if(comma) {
-	  strncpy(air, line + 1, 3);
-	  air[4] = '\0';
-
+	  strncpy(data[i].code, line + 1, 3);
+	  data[i].code[3] = '\0';
+	  
 	  strncpy(latitude, line + 6, 5);
 	  latitude[5] = '\0';
-
-	  strncpy(longitude, line + 12, 6);
+	  la = (double)atof(latitude);
+	  
+	  strncpy(longitude, line + 12, 7);
 	  longitude[7] = '\0';
+	  lo = (double)atof(longitude);
 
-	  int comma_pos = comma - tab - 1;
-	  int tab_pos = tab - line + 1;
+	  strncpy(data[i].city, line + tab_pos, comma_pos);
+	  data[i].city[comma_pos] = '\0';
 
-	  strncpy(city, line + tab_pos, comma_pos);
-	  city[comma_pos] = '\0';
-
+	  kd_insert2(tree, la, lo, &data[i]);
+	  i += 1;
 	}
   }
-  
   fclose(fp);
+
+  //airportnode newitem;
+  airportlist newitem;
+  airportlist *ptr;
+  ptr = &result.airport_ret_u.list;
+
+  res = kd_nearest_n2(tree, (double)47.45, (double)-122.30, 5);
+  printf("processing results...\n");
+  while(!kd_res_end(res)) {
+	//printf("starting loop\n");
+	*ptr = (airportnode *) malloc (sizeof(airportnode));
+	newitem = *ptr;
+
+	//if (newitem != (airportnode *)NULL) {
+	kd_res_item2(res, &la, &lo);
+	node = (nodedata*)kd_res_item_data(res);
+	  
+	newitem->code = node->code;
+	newitem->name = node->city;
+	newitem->latitude = la;
+	newitem->longitude = lo;
+	float x = kd_res_dist(res);
+	newitem->distance = x;
+	//	ptr = &newitem -> next;
+	//printf("%f %f %f, data=%s, %s\n", la, lo, kd_res_dist(res), node->code, node->city);
+
+	kd_res_next(res);
+  }
+
+  kd_res_free(res);
+  kd_free(tree);
   return &result;
 }
+
+//int main(void) {
+//printf("IN MAIN\n");
+//return 0;
+//}
