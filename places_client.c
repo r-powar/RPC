@@ -32,7 +32,7 @@ placesprog_1(char *host, char *city, char *state)
 	
 	  placelist list;
 	  list = result_1 -> places_ret_u.list;
-	  printf("We found these airports near you: ");
+	  printf("We found these airports near you: \n");
 	  while(list != NULL) {
 	    printf("%s\n", list->placename);
 		list = list -> next;
