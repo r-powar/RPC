@@ -23,8 +23,6 @@ typedef struct placenode *placelist;
 struct placenode {
 	nametype placename;
     statetype state;
-    //nametype code;
-    //float distance;
     float latitude;
     float longitude;
 	placelist next;

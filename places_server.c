@@ -291,11 +291,9 @@ places_1_svc(placedata *argp, struct svc_req *rqstp)
 #ifndef DEBUG
   clnt_destroy (clnt);
 #endif   /* DEBUG */
+  
   *ptr = (placelist)NULL;
-  
   result.err = 0;
-  
   trieFree(node);
-  printf("RETURNING \n");
   return &result;
 }
